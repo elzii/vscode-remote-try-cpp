@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROG=$(basename $0)
+PROG_FULL="$SCRIPT_DIR/$PROG"
+
+# declare -a DIRS=( cxxopts )
+# declare -a DIRS=( $(ls -1 $SCRIPT_DIR | xargs file | grep ': directory' | awk -F ':' '{print $1}') )
+declare -a DIRS=( $(ls -l | awk '/^d/' | awk -F '[[:space:]]' '{print $9}'))
+
+declare -a FILELIST=(
+  cxxopts-config-version.cmake 
+  cxxopts-config.cmake 
+  cxxopts-targets.c
+  Makefile 
+  CMakeCache.txt
+  CMakeFiles
+)
+
+main() {
+  local -n dirs=${1}
+  local -n files=${2}
+  shift 2
+  local flags="$@"
+
+  if [[ ${flags} == *"--dryrun"* ]]; then
+    echo "[DIRS]  = ${dirs[@]}"
+    echo "[FILES] = ${files[@]}"
+  else 
+
+    for d in ${dirs[@]}; do
+      dir="$SCRIPT_DIR/${d}"
+      echo -e "Cleaning ${dir}"
+      cd ${dir}
+      for f in ${files[@]}; do
+        rm -rfv "./${f}"
+      done
+    done
+
+  fi
+}
+
+
+print_dirs() {
+  echo "${DIRS[@]}"
+}
+
+print_files() {
+  echo "${FILELIST[@]}"
+}
+
+# print_dirs
+# print_files
+
+main DIRS FILELIST

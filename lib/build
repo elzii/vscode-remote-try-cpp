@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROG=$(basename $0)
+PROG_FULL="$SCRIPT_DIR/$PROG"
+
+# declare -a DIRS=( $(ls -1 $SCRIPT_DIR | xargs file | grep ': directory' | awk -F ':' '{print $1}') )
+declare -a DIRS=( $(ls -l | awk '/^d/' | awk -F '[[:space:]]' '{print $9}'))
+
+main() {
+  local -n dirs=${1}
+  shift 1
+  local flags="$@"
+
+    for d in ${dirs[@]}; do
+      dir="$SCRIPT_DIR/${d}"
+      cd ${dir}
+
+      echo -e "-------------------------------------------------"
+      echo -e "Building $(basename ${dir})"
+      echo -e "-------------------------------------------------\n"
+      
+      local IS_CMAKE="$(ls -1 ${dir} | egrep 'CMakeLists.txt' 1>/dev/null; echo $?)"
+      # CMake projects
+      if [ $IS_CMAKE -eq 0 ]; then
+        # Turn off Werror
+        echo -e "TURNING OFF -Werror flag"
+        sed 's/\-Werror\/s//g' ${dir}/CMakeLists.txt > ${dir}/CMakeLists.txt
+        # mkdir -p ./build
+        # cd ./build
+        cmake .
+        make
+      fi
+
+      cd ${SCRIPT_DIR}
+    done
+}
+
+
+main DIRS
