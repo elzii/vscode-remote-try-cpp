@@ -1,0 +1,6 @@
+title = "TOML Example"
+
+[owner]
+name = "Alex"
+enabled = true
+data = [ ["age"], [34] ]
